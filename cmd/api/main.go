@@ -4,7 +4,8 @@ import (
 	"time"
 
 	"github.com/Wexlersolk/GriefBlades/internal/env"
-	"github.com/nxadm/tail/ratelimiter"
+	"github.com/Wexlersolk/GriefBlades/internal/ratelimiter"
+	"go.uber.org/zap"
 )
 
 const version = "1.1.0"
@@ -46,6 +47,15 @@ func main() {
 				iss:    "griefblades",
 			},
 		},
-		rateLimiter: ratelimiter.Config,
+		rateLimiter: ratelimiter.Config{
+			RequestPerTimeFrame: env.GetInt("RATELIMITER_REQUEST_COUNT", 20),
+			TimeFrame:           time.Hour,
+			Enambled:            env.GetBool("RATELIMITER_ENABLED", true),
+		},
 	}
+
+	logger := zap.Must(zap.NewProduction()).Sugar()
+	defer logger.Sync()
+
+	db, err := db.New
 }
