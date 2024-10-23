@@ -6,8 +6,8 @@ import (
 	"time"
 )
 
-func New(addr, database string, maxOpenConns, maxIdleConns int, maxIdleTime string) (*sql.DB, error) {
-	db, err := sql.Open(database, addr)
+func New(addr, tool string, maxOpenConns, maxIdleConns int, maxIdleTime string) (*sql.DB, error) {
+	db, err := sql.Open(tool, addr)
 	if err != nil {
 		return nil, err
 	}

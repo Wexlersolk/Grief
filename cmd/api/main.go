@@ -3,8 +3,10 @@ package main
 import (
 	"time"
 
+	"github.com/Wexlersolk/GriefBlades/internal/db"
 	"github.com/Wexlersolk/GriefBlades/internal/env"
 	"github.com/Wexlersolk/GriefBlades/internal/ratelimiter"
+	"github.com/go-redis/redis"
 	"go.uber.org/zap"
 )
 
@@ -57,5 +59,23 @@ func main() {
 	logger := zap.Must(zap.NewProduction()).Sugar()
 	defer logger.Sync()
 
-	db, err := db.New
+	db, err := db.New(
+		cfg.db.addr,
+		cfg.db.tool,
+		cfg.db.maxIdleConns,
+		cfg.db.maxOpenConns,
+		cfg.db.maxIdleTime,
+	)
+	if err != nil {
+		logger.Fatal(err)
+	}
+	
+	defer db.Close()
+	logger.Info("database connection pool established")
+
+	var rgb *redis.Client
+	if cfg.redisCfg.enabled {
+		rdb = cache.NewRedis 
+
+
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"time"
 
+	"github.com/Wexlersolk/GriefBlades/internal/ratelimiter"
 	"go.uber.org/zap"
 )
 
@@ -63,6 +64,7 @@ type sendGridConfig struct {
 
 type dbConfig struct {
 	addr         string
+	tool         string
 	maxOpenConns int
 	maxIdleConns int
 	maxIdleTime  string
