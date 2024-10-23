@@ -5,6 +5,7 @@ import (
 
 	"github.com/Wexlersolk/GriefBlades/internal/db"
 	"github.com/Wexlersolk/GriefBlades/internal/env"
+	"github.com/Wexlersolk/GriefBlades/internal/grief/cache"
 	"github.com/Wexlersolk/GriefBlades/internal/ratelimiter"
 	"github.com/go-redis/redis"
 	"go.uber.org/zap"
@@ -69,13 +70,23 @@ func main() {
 	if err != nil {
 		logger.Fatal(err)
 	}
-	
+
 	defer db.Close()
 	logger.Info("database connection pool established")
 
-	var rgb *redis.Client
+	var rdb *redis.Client
 	if cfg.redisCfg.enabled {
-		rdb = cache.NewRedis 
+		rdb = cache.NewRedisClient(cfg.redisCfg.addr, cfg.redisCfg.pw, cfg.redisCfg.db)
+		logger.Info("redis cashe connection established")
 
+		defer rdb.Close()
+	}
+
+	rateLimiter := ratelimiter.NewFixedWindowLimiter(
+		cfg.rateLimiter.RequestPerTimeFrame,
+		cfg.rateLimiter.TimeFrame,
+	)
+	
+	mailer := mailer.
 
 }
