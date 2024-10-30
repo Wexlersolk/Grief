@@ -4,6 +4,7 @@ go 1.23.1
 
 require (
 	github.com/go-redis/redis v6.15.9+incompatible
+	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/sendgrid/sendgrid-go v3.16.0+incompatible
 	go.uber.org/zap v1.27.0
 )

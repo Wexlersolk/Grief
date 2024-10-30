@@ -6,6 +6,7 @@ import (
 	"github.com/Wexlersolk/GriefBlades/internal/db"
 	"github.com/Wexlersolk/GriefBlades/internal/env"
 	"github.com/Wexlersolk/GriefBlades/internal/grief/cache"
+	"github.com/Wexlersolk/GriefBlades/internal/mailer"
 	"github.com/Wexlersolk/GriefBlades/internal/ratelimiter"
 	"github.com/go-redis/redis"
 	"go.uber.org/zap"
@@ -86,7 +87,9 @@ func main() {
 		cfg.rateLimiter.RequestPerTimeFrame,
 		cfg.rateLimiter.TimeFrame,
 	)
-	
-	mailer := mailer.
+
+	mailer := mailer.NewSendgrid(cfg.mail.sendGrid.apiKey, cfg.mail.fromEmail)
+
+	jwtAuthenticator := auth.NewJ
 
 }
