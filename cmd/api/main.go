@@ -3,6 +3,7 @@ package main
 import (
 	"time"
 
+	"github.com/Wexlersolk/GriefBlades/internal/auth"
 	"github.com/Wexlersolk/GriefBlades/internal/db"
 	"github.com/Wexlersolk/GriefBlades/internal/env"
 	"github.com/Wexlersolk/GriefBlades/internal/grief/cache"
@@ -90,6 +91,12 @@ func main() {
 
 	mailer := mailer.NewSendgrid(cfg.mail.sendGrid.apiKey, cfg.mail.fromEmail)
 
-	jwtAuthenticator := auth.NewJ
+	jwtAuthenticator := auth.NewJWTAuthenticator(
+		cfg.auth.token.secret,
+		cfg.auth.token.iss,
+		cfg.auth.token.iss,
+	)
+
+	store := store.NewStorage(db)
 
 }
