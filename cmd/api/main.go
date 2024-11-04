@@ -6,6 +6,7 @@ import (
 	"github.com/Wexlersolk/GriefBlades/internal/auth"
 	"github.com/Wexlersolk/GriefBlades/internal/db"
 	"github.com/Wexlersolk/GriefBlades/internal/env"
+	"github.com/Wexlersolk/GriefBlades/internal/grief"
 	"github.com/Wexlersolk/GriefBlades/internal/grief/cache"
 	"github.com/Wexlersolk/GriefBlades/internal/mailer"
 	"github.com/Wexlersolk/GriefBlades/internal/ratelimiter"
@@ -97,6 +98,7 @@ func main() {
 		cfg.auth.token.iss,
 	)
 
-	store := store.NewStorage(db)
+	store := grief.NewStorage(db)
+	cacheStorage := cache.NewRedisStorage(rdb)
 
 }
