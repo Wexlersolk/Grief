@@ -1,15 +1,17 @@
 package main
 
 import (
+	"expvar"
+	"runtime"
 	"time"
 
-	"github.com/Wexlersolk/GriefBlades/internal/auth"
-	"github.com/Wexlersolk/GriefBlades/internal/db"
-	"github.com/Wexlersolk/GriefBlades/internal/env"
-	"github.com/Wexlersolk/GriefBlades/internal/grief"
-	"github.com/Wexlersolk/GriefBlades/internal/grief/cache"
-	"github.com/Wexlersolk/GriefBlades/internal/mailer"
-	"github.com/Wexlersolk/GriefBlades/internal/ratelimiter"
+	"github.com/Wexlersolk/Grief/internal/auth"
+	"github.com/Wexlersolk/Grief/internal/db"
+	"github.com/Wexlersolk/Grief/internal/env"
+	"github.com/Wexlersolk/Grief/internal/grief"
+	"github.com/Wexlersolk/Grief/internal/grief/cache"
+	"github.com/Wexlersolk/Grief/internal/mailer"
+	"github.com/Wexlersolk/Grief/internal/ratelimiter"
 	"github.com/go-redis/redis"
 	"go.uber.org/zap"
 )
@@ -90,7 +92,10 @@ func main() {
 		cfg.rateLimiter.TimeFrame,
 	)
 
-	mailer := mailer.NewSendgrid(cfg.mail.sendGrid.apiKey, cfg.mail.fromEmail)
+	mailtrap, err := mailer.NewMailTrapClient(cfg.mail.mailTrap.apiKey, cfg.mail.fromEmail)
+	if err != nil {
+		logger.Fatal(err)
+	}
 
 	jwtAuthenticator := auth.NewJWTAuthenticator(
 		cfg.auth.token.secret,
@@ -101,4 +106,25 @@ func main() {
 	store := grief.NewStorage(db)
 	cacheStorage := cache.NewRedisStorage(rdb)
 
+	app := &application{
+		config:        cfg,
+		cacheStorage:  cacheStorage,
+		logger:        logger,
+		mailer:        mailtrap,
+		authenticator: jwtAuthenticator,
+		rateLimiter:   rateLimiter,
+	}
+
+	expvar.NewString("version").Set(version)
+	expvar.Publish("database", expvar.Func(func() any {
+		return db.Stats()
+	}))
+
+	expvar.Publish("goroutines", expvar.Func(func() any {
+		return runtime.NumGoroutine()
+	}))
+
+	mux := app.mount()
+
+	logger.Fatal(app.run(mux))
 }
