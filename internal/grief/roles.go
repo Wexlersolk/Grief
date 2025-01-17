@@ -27,3 +27,4 @@ func (s *RoleStore) GetByName(ctx context.Context, slug string) (*Role, error) {
 
 	return role, nil
 }
+

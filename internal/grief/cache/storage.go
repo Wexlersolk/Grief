@@ -3,8 +3,8 @@ package cache
 import (
 	"context"
 
-	"github.com/Wexlersolk/GriefBlades/internal/grief"
-	"github.com/go-redis/redis"
+	"github.com/Wexlersolk/Grief/internal/grief"
+	"github.com/go-redis/redis/v8"
 )
 
 type Storage struct {

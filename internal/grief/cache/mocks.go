@@ -3,7 +3,7 @@ package cache
 import (
 	"context"
 
-	"github.com/Wexlersolk/GriefBlades/internal/grief"
+	"github.com/Wexlersolk/Grief/internal/grief"
 	"github.com/stretchr/testify/mock"
 )
 

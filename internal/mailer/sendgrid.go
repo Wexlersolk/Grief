@@ -3,7 +3,7 @@ package mailer
 import (
 	"bytes"
 	"fmt"
-	"html/template"
+	"text/template"
 	"time"
 
 	"github.com/sendgrid/sendgrid-go"
@@ -30,6 +30,7 @@ func (m *SendGridMailer) Send(templateFile, username, email string, data any, is
 	from := mail.NewEmail(FromName, m.fromEmail)
 	to := mail.NewEmail(username, email)
 
+	// template parsing and building
 	tmpl, err := template.ParseFS(FS, "templates/"+templateFile)
 	if err != nil {
 		return -1, err
@@ -42,7 +43,7 @@ func (m *SendGridMailer) Send(templateFile, username, email string, data any, is
 	}
 
 	body := new(bytes.Buffer)
-	err = tmpl.ExecuteTemplate(subject, "body", data)
+	err = tmpl.ExecuteTemplate(body, "body", data)
 	if err != nil {
 		return -1, err
 	}
@@ -56,16 +57,17 @@ func (m *SendGridMailer) Send(templateFile, username, email string, data any, is
 	})
 
 	var retryErr error
-	for i := 0; i < maxRetries; i++ {
-		responce, retryErr := m.client.Send(message)
+	for i := 0; i < maxRetires; i++ {
+		response, retryErr := m.client.Send(message)
 		if retryErr != nil {
+			// exponential backoff
 			time.Sleep(time.Second * time.Duration(i+1))
 			continue
 		}
 
-		return responce.StatusCode, nil
+		return response.StatusCode, nil
 	}
 
-	return -1, fmt.Errorf("failed to send email after %d attempt, error: %v", maxRetries, retryErr)
-
+	return -1, fmt.Errorf("failed to send email after %d attempt, error: %v", maxRetires, retryErr)
 }
+

@@ -3,9 +3,9 @@ package mailer
 import "embed"
 
 const (
-	FromName            = "Rat"
+	FromName            = "Grief"
 	maxRetries          = 3
-	UserWelcomeTemplate = "user_invitation.templ"
+	UserWelcomeTemplate = "user_invitation.tmpl"
 )
 
 var FS embed.FS
