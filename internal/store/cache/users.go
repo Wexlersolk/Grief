@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Wexlersolk/Grief/internal/grief"
+	"github.com/Wexlersolk/store/internal/store"
 	"github.com/go-redis/redis/v8"
 )
 
@@ -16,7 +16,7 @@ type UserStore struct {
 
 const UserExpTime = time.Minute
 
-func (s *UserStore) Get(ctx context.Context, userID int64) (*grief.User, error) {
+func (s *UserStore) Get(ctx context.Context, userID int64) (*store.User, error) {
 	cacheKey := fmt.Sprintf("user-%d", userID)
 
 	data, err := s.rdb.Get(ctx, cacheKey).Result()
@@ -26,7 +26,7 @@ func (s *UserStore) Get(ctx context.Context, userID int64) (*grief.User, error) 
 		return nil, err
 	}
 
-	var user grief.User
+	var user store.User
 	if data != "" {
 		err := json.Unmarshal([]byte(data), &user)
 		if err != nil {
@@ -37,7 +37,7 @@ func (s *UserStore) Get(ctx context.Context, userID int64) (*grief.User, error) 
 	return &user, nil
 }
 
-func (s *UserStore) Set(ctx context.Context, user *grief.User) error {
+func (s *UserStore) Set(ctx context.Context, user *store.User) error {
 	cacheKey := fmt.Sprintf("user-%d", user.ID)
 
 	json, err := json.Marshal(user)
@@ -52,4 +52,3 @@ func (s *UserStore) Delete(ctx context.Context, userID int64) {
 	cacheKey := fmt.Sprintf("user-%d", userID)
 	s.rdb.Del(ctx, cacheKey)
 }
-

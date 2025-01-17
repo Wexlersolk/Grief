@@ -1,4 +1,4 @@
-package grief
+package store
 
 import (
 	"context"
@@ -65,4 +65,3 @@ func withTx(db *sql.DB, ctx context.Context, fn func(*sql.Tx) error) error {
 
 	return tx.Commit()
 }
-

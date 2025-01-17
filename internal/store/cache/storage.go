@@ -3,14 +3,14 @@ package cache
 import (
 	"context"
 
-	"github.com/Wexlersolk/Grief/internal/grief"
+	"github.com/Wexlersolk/store/internal/store"
 	"github.com/go-redis/redis/v8"
 )
 
 type Storage struct {
 	Users interface {
-		Get(context.Context, int64) (*grief.User, error)
-		Set(context.Context, grief.User) error
+		Get(context.Context, int64) (*store.User, error)
+		Set(context.Context, store.User) error
 		Delete(context.Context, int64)
 	}
 }

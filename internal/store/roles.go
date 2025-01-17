@@ -1,4 +1,4 @@
-package grief
+package store
 
 import (
 	"context"
@@ -27,4 +27,3 @@ func (s *RoleStore) GetByName(ctx context.Context, slug string) (*Role, error) {
 
 	return role, nil
 }
-

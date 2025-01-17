@@ -3,7 +3,7 @@ package main
 import (
 	"net/http"
 
-	"github.com/Wexlersolk/Grief/internal/grief"
+	"github.com/Wexlersolk/Grief/internal/store"
 )
 
 // getUserFeedHandler godoc
@@ -20,13 +20,13 @@ import (
 //	@Param			sort	query		string	false	"Sort"
 //	@Param			tags	query		string	false	"Tags"
 //	@Param			search	query		string	false	"Search"
-//	@Success		200		{object}	[]grief.PostWithMetadata
+//	@Success		200		{object}	[]store.PostWithMetadata
 //	@Failure		400		{object}	error
 //	@Failure		500		{object}	error
 //	@Security		ApiKeyAuth
 //	@Router			/users/feed [get]
 func (app *application) getUserFeedHandler(w http.ResponseWriter, r *http.Request) {
-	fq := grief.PaginatedFeedQuery{
+	fq := store.PaginatedFeedQuery{
 		Limit:  20,
 		Offset: 0,
 		Sort:   "desc",
@@ -48,7 +48,7 @@ func (app *application) getUserFeedHandler(w http.ResponseWriter, r *http.Reques
 	ctx := r.Context()
 	user := getUserFromContext(r)
 
-	feed, err := app.grief.Posts.GetUserFeed(ctx, user.ID, fq)
+	feed, err := app.store.Posts.GetUserFeed(ctx, user.ID, fq)
 	if err != nil {
 		app.internalServerError(w, r, err)
 		return

@@ -1,4 +1,4 @@
-package grief
+package store
 
 import (
 	"net/http"

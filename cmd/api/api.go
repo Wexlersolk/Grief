@@ -13,9 +13,10 @@ import (
 
 	"github.com/Wexlersolk/Grief/internal/auth"
 	"github.com/Wexlersolk/Grief/internal/env"
-	"github.com/Wexlersolk/Grief/internal/grief/cache"
 	"github.com/Wexlersolk/Grief/internal/mailer"
 	"github.com/Wexlersolk/Grief/internal/ratelimiter"
+	"github.com/Wexlersolk/Grief/internal/store"
+	"github.com/Wexlersolk/Grief/internal/store/cache"
 	"github.com/docker/docker/api/server/middleware"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"

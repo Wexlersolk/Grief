@@ -3,7 +3,7 @@ package cache
 import (
 	"context"
 
-	"github.com/Wexlersolk/Grief/internal/grief"
+	"github.com/Wexlersolk/Grief/internal/store"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -17,12 +17,12 @@ type MockUserStore struct {
 	mock.Mock
 }
 
-func (m *MockUserStore) Get(ctx context.Context, userID int64) (*grief.User, error) {
+func (m *MockUserStore) Get(ctx context.Context, userID int64) (*store.User, error) {
 	args := m.Called(userID)
 	return nil, args.Error(1)
 }
 
-func (m *MockUserStore) Set(ctx context.Context, user *grief.User) error {
+func (m *MockUserStore) Set(ctx context.Context, user *store.User) error {
 	args := m.Called(user)
 	return args.Error(0)
 }

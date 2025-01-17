@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Wexlersolk/Grief/internal/grief"
+	"github.com/Wexlersolk/Grief/internal/store"
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -118,8 +118,8 @@ func (app *application) checkPostOwnership(requiredRole string, next http.Handle
 	})
 }
 
-func (app *application) checkRolePrecedence(ctx context.Context, user *grief.User, roleName string) (bool, error) {
-	role, err := app.grief.Roles.GetByName(ctx, roleName)
+func (app *application) checkRolePrecedence(ctx context.Context, user *store.User, roleName string) (bool, error) {
+	role, err := app.store.Roles.GetByName(ctx, roleName)
 	if err != nil {
 		return false, err
 	}
@@ -127,9 +127,9 @@ func (app *application) checkRolePrecedence(ctx context.Context, user *grief.Use
 	return user.Role.Level >= role.Level, nil
 }
 
-func (app *application) getUser(ctx context.Context, userID int64) (*grief.User, error) {
+func (app *application) getUser(ctx context.Context, userID int64) (*store.User, error) {
 	if !app.config.redisCfg.enabled {
-		return app.grief.Users.GetByID(ctx, userID)
+		return app.store.Users.GetByID(ctx, userID)
 	}
 
 	user, err := app.cacheStorage.Users.Get(ctx, userID)
@@ -138,7 +138,7 @@ func (app *application) getUser(ctx context.Context, userID int64) (*grief.User,
 	}
 
 	if user == nil {
-		user, err = app.grief.Users.GetByID(ctx, userID)
+		user, err = app.store.Users.GetByID(ctx, userID)
 		if err != nil {
 			return nil, err
 		}

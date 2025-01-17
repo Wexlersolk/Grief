@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/Wexlersolk/Grief/internal/grief"
+	"github.com/Wexlersolk/Grief/internal/store"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -28,7 +28,7 @@ type CreatePostPayload struct {
 //	@Accept			json
 //	@Produce		json
 //	@Param			payload	body		CreatePostPayload	true	"Post payload"
-//	@Success		201		{object}	grief.Post
+//	@Success		201		{object}	store.Post
 //	@Failure		400		{object}	error
 //	@Failure		401		{object}	error
 //	@Failure		500		{object}	error
@@ -48,7 +48,7 @@ func (app *application) createPostHandler(w http.ResponseWriter, r *http.Request
 
 	user := getUserFromContext(r)
 
-	post := &grief.Post{
+	post := &store.Post{
 		Title:   payload.Title,
 		Content: payload.Content,
 		Tags:    payload.Tags,
@@ -57,7 +57,7 @@ func (app *application) createPostHandler(w http.ResponseWriter, r *http.Request
 
 	ctx := r.Context()
 
-	if err := app.grief.Posts.Create(ctx, post); err != nil {
+	if err := app.store.Posts.Create(ctx, post); err != nil {
 		app.internalServerError(w, r, err)
 		return
 	}
@@ -76,7 +76,7 @@ func (app *application) createPostHandler(w http.ResponseWriter, r *http.Request
 //	@Accept			json
 //	@Produce		json
 //	@Param			id	path		int	true	"Post ID"
-//	@Success		200	{object}	grief.Post
+//	@Success		200	{object}	store.Post
 //	@Failure		404	{object}	error
 //	@Failure		500	{object}	error
 //	@Security		ApiKeyAuth
@@ -84,7 +84,7 @@ func (app *application) createPostHandler(w http.ResponseWriter, r *http.Request
 func (app *application) getPostHandler(w http.ResponseWriter, r *http.Request) {
 	post := getPostFromCtx(r)
 
-	comments, err := app.grief.Comments.GetByPostID(r.Context(), post.ID)
+	comments, err := app.store.Comments.GetByPostID(r.Context(), post.ID)
 	if err != nil {
 		app.internalServerError(w, r, err)
 		return
@@ -121,9 +121,9 @@ func (app *application) deletePostHandler(w http.ResponseWriter, r *http.Request
 
 	ctx := r.Context()
 
-	if err := app.grief.Posts.Delete(ctx, id); err != nil {
+	if err := app.store.Posts.Delete(ctx, id); err != nil {
 		switch {
-		case errors.Is(err, grief.ErrNotFound):
+		case errors.Is(err, store.ErrNotFound):
 			app.notFoundResponse(w, r, err)
 		default:
 			app.internalServerError(w, r, err)
@@ -148,7 +148,7 @@ type UpdatePostPayload struct {
 //	@Produce		json
 //	@Param			id		path		int					true	"Post ID"
 //	@Param			payload	body		UpdatePostPayload	true	"Post payload"
-//	@Success		200		{object}	grief.Post
+//	@Success		200		{object}	store.Post
 //	@Failure		400		{object}	error
 //	@Failure		401		{object}	error
 //	@Failure		404		{object}	error
@@ -198,10 +198,10 @@ func (app *application) postsContextMiddleware(next http.Handler) http.Handler {
 
 		ctx := r.Context()
 
-		post, err := app.grief.Posts.GetByID(ctx, id)
+		post, err := app.store.Posts.GetByID(ctx, id)
 		if err != nil {
 			switch {
-			case errors.Is(err, grief.ErrNotFound):
+			case errors.Is(err, store.ErrNotFound):
 				app.notFoundResponse(w, r, err)
 			default:
 				app.internalServerError(w, r, err)
@@ -214,13 +214,13 @@ func (app *application) postsContextMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func getPostFromCtx(r *http.Request) *grief.Post {
-	post, _ := r.Context().Value(postCtx).(*grief.Post)
+func getPostFromCtx(r *http.Request) *store.Post {
+	post, _ := r.Context().Value(postCtx).(*store.Post)
 	return post
 }
 
-func (app *application) updatePost(ctx context.Context, post *grief.Post) error {
-	if err := app.grief.Posts.Update(ctx, post); err != nil {
+func (app *application) updatePost(ctx context.Context, post *store.Post) error {
+	if err := app.store.Posts.Update(ctx, post); err != nil {
 		return err
 	}
 

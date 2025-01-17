@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Wexlersolk/Grief/internal/grief"
 	"github.com/Wexlersolk/Grief/internal/mailer"
+	"github.com/Wexlersolk/Grief/internal/store"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 )
@@ -20,7 +20,7 @@ type RegisterUserPayload struct {
 }
 
 type UserWithToken struct {
-	*grief.User
+	*store.User
 	Token string `json:"token"`
 }
 
@@ -48,10 +48,10 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	user := &grief.User{
+	user := &store.User{
 		Username: payload.Username,
 		Email:    payload.Email,
-		Role: grief.Role{
+		Role: store.Role{
 			Name: "user",
 		},
 	}
@@ -70,12 +70,12 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 	hash := sha256.Sum256([]byte(plainToken))
 	hashToken := hex.EncodeToString(hash[:])
 
-	err := app.grief.Users.CreateAndInvite(ctx, user, hashToken, app.config.mail.exp)
+	err := app.store.Users.CreateAndInvite(ctx, user, hashToken, app.config.mail.exp)
 	if err != nil {
 		switch err {
-		case grief.ErrDuplicateEmail:
+		case store.ErrDuplicateEmail:
 			app.badRequestResponse(w, r, err)
-		case grief.ErrDuplicateUsername:
+		case store.ErrDuplicateUsername:
 			app.badRequestResponse(w, r, err)
 		default:
 			app.internalServerError(w, r, err)
@@ -104,7 +104,7 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 		app.logger.Errorw("error sending welcome email", "error", err)
 
 		// rollback user creation if email fails (SAGA pattern)
-		if err := app.grief.Users.Delete(ctx, user.ID); err != nil {
+		if err := app.store.Users.Delete(ctx, user.ID); err != nil {
 			app.logger.Errorw("error deleting user", "error", err)
 		}
 
@@ -149,10 +149,10 @@ func (app *application) createTokenHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	user, err := app.grief.Users.GetByEmail(r.Context(), payload.Email)
+	user, err := app.store.Users.GetByEmail(r.Context(), payload.Email)
 	if err != nil {
 		switch err {
-		case grief.ErrNotFound:
+		case store.ErrNotFound:
 			app.unauthorizedErrorResponse(w, r, err)
 		default:
 			app.internalServerError(w, r, err)

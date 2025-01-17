@@ -8,10 +8,10 @@ import (
 	"github.com/Wexlersolk/Grief/internal/auth"
 	"github.com/Wexlersolk/Grief/internal/db"
 	"github.com/Wexlersolk/Grief/internal/env"
-	"github.com/Wexlersolk/Grief/internal/grief"
-	"github.com/Wexlersolk/Grief/internal/grief/cache"
 	"github.com/Wexlersolk/Grief/internal/mailer"
 	"github.com/Wexlersolk/Grief/internal/ratelimiter"
+	"github.com/Wexlersolk/Grief/internal/store"
+	"github.com/Wexlersolk/Grief/internal/store/cache"
 	"github.com/go-redis/redis"
 	"go.uber.org/zap"
 )
@@ -103,7 +103,7 @@ func main() {
 		cfg.auth.token.iss,
 	)
 
-	store := grief.NewStorage(db)
+	store := store.NewStorage(db)
 	cacheStorage := cache.NewRedisStorage(rdb)
 
 	app := &application{
