@@ -5,6 +5,7 @@ go 1.23.1
 require (
 	github.com/docker/docker v27.5.0+incompatible
 	github.com/go-chi/chi v1.5.5
+	github.com/go-chi/chi/v5 v5.2.0
 	github.com/go-chi/cors v1.2.1
 	github.com/go-playground/validator/v10 v10.24.0
 	github.com/go-redis/redis v6.15.9+incompatible
