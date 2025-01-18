@@ -158,4 +158,3 @@ func getUserFromContext(r *http.Request) *store.User {
 	user, _ := r.Context().Value(userCtx).(*store.User)
 	return user
 }
-

@@ -30,3 +30,4 @@ func (m *MockUserStore) Set(ctx context.Context, user *store.User) error {
 func (m *MockUserStore) Delete(ctx context.Context, userID int64) {
 	m.Called(userID)
 }
+

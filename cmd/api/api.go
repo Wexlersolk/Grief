@@ -17,13 +17,13 @@ import (
 	"github.com/Wexlersolk/Grief/internal/ratelimiter"
 	"github.com/Wexlersolk/Grief/internal/store"
 	"github.com/Wexlersolk/Grief/internal/store/cache"
-	"github.com/docker/docker/api/server/middleware"
-	"github.com/go-chi/chi"
-	"github.com/go-chi/chi/middleware"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
-	"github.com/labstack/echo/middleware"
-	"github.com/swaggo/swag/example/basic/docs"
 	"go.uber.org/zap"
+
+	httpSwagger "github.com/swaggo/http-swagger/v2"
+	"github.com/swaggo/swag/example/basic/docs"
 )
 
 type application struct {
@@ -73,8 +73,13 @@ type basicConfig struct {
 
 type mailConfig struct {
 	sendGrid  sendGridConfig
+	mailTrap  mailTrapConfig
 	fromEmail string
 	exp       time.Duration
+}
+
+type mailTrapConfig struct {
+	apiKey string
 }
 
 type sendGridConfig struct {
@@ -83,7 +88,6 @@ type sendGridConfig struct {
 
 type dbConfig struct {
 	addr         string
-	tool         string
 	maxOpenConns int
 	maxIdleConns int
 	maxIdleTime  string
@@ -208,3 +212,4 @@ func (app *application) run(mux http.Handler) error {
 
 	return nil
 }
+

@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Wexlersolk/store/internal/store"
+	"github.com/Wexlersolk/Grief/internal/store"
 	"github.com/go-redis/redis/v8"
 )
 

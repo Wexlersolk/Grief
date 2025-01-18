@@ -8,7 +8,7 @@ import (
 
 	"math/rand"
 
-	"github.com/Wexlersolk/Grief/internal/grief"
+	"github.com/Wexlersolk/Grief/internal/store"
 )
 
 var usernames = []string{
@@ -74,14 +74,14 @@ var comments = []string{
 	"Thanks for the information, very useful.",
 }
 
-func Seed(grief grief.Storage, db *sql.DB) {
+func Seed(store store.Storage, db *sql.DB) {
 	ctx := context.Background()
 
 	users := generateUsers(100)
 	tx, _ := db.BeginTx(ctx, nil)
 
 	for _, user := range users {
-		if err := grief.Users.Create(ctx, tx, user); err != nil {
+		if err := store.Users.Create(ctx, tx, user); err != nil {
 			_ = tx.Rollback()
 			log.Println("Error creating user:", err)
 			return
@@ -92,7 +92,7 @@ func Seed(grief grief.Storage, db *sql.DB) {
 
 	posts := generatePosts(200, users)
 	for _, post := range posts {
-		if err := grief.Posts.Create(ctx, post); err != nil {
+		if err := store.Posts.Create(ctx, post); err != nil {
 			log.Println("Error creating post:", err)
 			return
 		}
@@ -100,7 +100,7 @@ func Seed(grief grief.Storage, db *sql.DB) {
 
 	comments := generateComments(500, users, posts)
 	for _, comment := range comments {
-		if err := grief.Comments.Create(ctx, comment); err != nil {
+		if err := store.Comments.Create(ctx, comment); err != nil {
 			log.Println("Error creating comment:", err)
 			return
 		}
@@ -109,14 +109,14 @@ func Seed(grief grief.Storage, db *sql.DB) {
 	log.Println("Seeding complete")
 }
 
-func generateUsers(num int) []*grief.User {
-	users := make([]*grief.User, num)
+func generateUsers(num int) []*store.User {
+	users := make([]*store.User, num)
 
 	for i := 0; i < num; i++ {
-		users[i] = &grief.User{
+		users[i] = &store.User{
 			Username: usernames[i%len(usernames)] + fmt.Sprintf("%d", i),
 			Email:    usernames[i%len(usernames)] + fmt.Sprintf("%d", i) + "@example.com",
-			Role: grief.Role{
+			Role: store.Role{
 				Name: "user",
 			},
 		}
@@ -125,12 +125,12 @@ func generateUsers(num int) []*grief.User {
 	return users
 }
 
-func generatePosts(num int, users []*grief.User) []*grief.Post {
-	posts := make([]*grief.Post, num)
+func generatePosts(num int, users []*store.User) []*store.Post {
+	posts := make([]*store.Post, num)
 	for i := 0; i < num; i++ {
 		user := users[rand.Intn(len(users))]
 
-		posts[i] = &grief.Post{
+		posts[i] = &store.Post{
 			UserID:  user.ID,
 			Title:   titles[rand.Intn(len(titles))],
 			Content: titles[rand.Intn(len(contents))],
@@ -144,10 +144,10 @@ func generatePosts(num int, users []*grief.User) []*grief.Post {
 	return posts
 }
 
-func generateComments(num int, users []*grief.User, posts []*grief.Post) []*grief.Comment {
-	cms := make([]*grief.Comment, num)
+func generateComments(num int, users []*store.User, posts []*store.Post) []*store.Comment {
+	cms := make([]*store.Comment, num)
 	for i := 0; i < num; i++ {
-		cms[i] = &grief.Comment{
+		cms[i] = &store.Comment{
 			PostID:  posts[rand.Intn(len(posts))].ID,
 			UserID:  users[rand.Intn(len(users))].ID,
 			Content: comments[rand.Intn(len(comments))],
@@ -155,4 +155,3 @@ func generateComments(num int, users []*grief.User, posts []*grief.Post) []*grie
 	}
 	return cms
 }
-

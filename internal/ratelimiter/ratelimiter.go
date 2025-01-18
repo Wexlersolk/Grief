@@ -9,5 +9,5 @@ type Limiter interface {
 type Config struct {
 	RequestPerTimeFrame int
 	TimeFrame           time.Duration
-	Enambled            bool
+	Enabled             bool
 }
