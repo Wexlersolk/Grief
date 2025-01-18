@@ -7,7 +7,7 @@ type Limiter interface {
 }
 
 type Config struct {
-	RequestPerTimeFrame int
-	TimeFrame           time.Duration
-	Enabled             bool
+	RequestsPerTimeFrame int
+	TimeFrame            time.Duration
+	Enabled              bool
 }

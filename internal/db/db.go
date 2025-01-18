@@ -6,8 +6,8 @@ import (
 	"time"
 )
 
-func New(addr, tool string, maxOpenConns, maxIdleConns int, maxIdleTime string) (*sql.DB, error) {
-	db, err := sql.Open(tool, addr)
+func New(addr string, maxOpenConns, maxIdleConns int, maxIdleTime string) (*sql.DB, error) {
+	db, err := sql.Open("postgres", addr)
 	if err != nil {
 		return nil, err
 	}
@@ -21,7 +21,7 @@ func New(addr, tool string, maxOpenConns, maxIdleConns int, maxIdleTime string) 
 	}
 	db.SetConnMaxIdleTime(duration)
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	if err = db.PingContext(ctx); err != nil {
@@ -30,3 +30,4 @@ func New(addr, tool string, maxOpenConns, maxIdleConns int, maxIdleTime string) 
 
 	return db, nil
 }
+

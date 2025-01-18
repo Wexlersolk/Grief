@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/Wexlersolk/Grief/internal/store"
 	"github.com/go-chi/chi/v5"
-	"github.com/sikozonpc/social/internal/store"
 )
 
 type userKey string
