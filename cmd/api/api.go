@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/Wexlersolk/Grief/internal/auth"
-	"github.com/Wexlersolk/Grief/internal/env"
 	"github.com/Wexlersolk/Grief/internal/mailer"
 	"github.com/Wexlersolk/Grief/internal/ratelimiter"
 	"github.com/Wexlersolk/Grief/internal/store"
@@ -101,7 +100,8 @@ func (app *application) mount() http.Handler {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 	r.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   []string{env.GetString("CORS_ALLOWED_ORIGIN", "http://localhost:5174")},
+		//	AllowedOrigins: []string{env.GetString("CORS_ALLOWED_ORIGIN", "http://localhost:5174")},
+		AllowedOrigins:   []string{"*"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 		ExposedHeaders:   []string{"Link"},
@@ -212,4 +212,3 @@ func (app *application) run(mux http.Handler) error {
 
 	return nil
 }
-

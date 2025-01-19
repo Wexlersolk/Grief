@@ -12,9 +12,9 @@ import (
 func TestRateLimiterMiddleware(t *testing.T) {
 	cfg := config{
 		rateLimiter: ratelimiter.Config{
-			RequestPerTimeFrame: 20,
-			TimeFrame:           time.Second * 5,
-			Enambled:            true,
+			RequestsPerTimeFrame: 20,
+			TimeFrame:            time.Second * 5,
+			Enabled:              true,
 		},
 		addr: ":8080",
 	}
@@ -51,5 +51,5 @@ func TestRateLimiterMiddleware(t *testing.T) {
 			}
 		}
 	}
-
 }
+
