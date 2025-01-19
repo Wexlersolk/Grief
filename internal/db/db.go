@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"time"
 )
 
@@ -25,9 +26,9 @@ func New(addr string, maxOpenConns, maxIdleConns int, maxIdleTime string) (*sql.
 	defer cancel()
 
 	if err = db.PingContext(ctx); err != nil {
+		fmt.Printf("Ping error: %v\n", err)
 		return nil, err
 	}
 
 	return db, nil
 }
-
