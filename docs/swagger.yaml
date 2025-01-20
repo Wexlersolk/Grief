@@ -178,12 +178,12 @@ info:
     email: support@swagger.io
     name: API Support
     url: http://www.swagger.io/support
-  description: API for GopherSocial, a social network for gohpers
+  description: API for Grief
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   termsOfService: http://swagger.io/terms/
-  title: GopherSocial API
+  title: Grief API
 paths:
   /authentication/token:
     post:
