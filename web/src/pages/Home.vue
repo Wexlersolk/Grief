@@ -12,10 +12,14 @@
         class="px-6 py-3 bg-blue-500 rounded uppercase font-bold hover:bg-blue-600 duration-300">
         Canvas
       </router-link>
+      <router-link
+        to="/board"
+        class="px-6 py-3 bg-green-500 rounded uppercase font-bold hover:bg-green-600 duration-300">
+        Board
+      </router-link>
     </div>
   </main>
 </template>
 
 <script lang="ts" setup>
 </script>
-

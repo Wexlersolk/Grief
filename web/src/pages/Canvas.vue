@@ -108,8 +108,7 @@ const draw = (event: MouseEvent) => {
   // Update shape
   currentShape.value.update(currentX, currentY);
 
-  // Clear and redraw canvas
-  ctx.value?.clearRect(0, 0, canvas.width, canvas.height);
+  // Only redraw the shape without clearing the background
   ctx.value?.beginPath();
   currentShape.value.draw(ctx.value);
 };
