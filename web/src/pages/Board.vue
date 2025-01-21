@@ -1,44 +1,58 @@
 <template>
-  <div class="min-h-screen bg-gray-100 flex flex-col">
-    <header class="bg-blue-600 text-white px-6 py-4">
-      <h1 class="text-2xl font-bold">Trello Board</h1>
-    </header>
-    <main class="flex-1 p-6 overflow-auto">
-      <div class="flex space-x-4">
-        <List
-          v-for="(list, index) in lists"
-          :key="index"
-          :list="list"
-          @add-card="addCard(index)"
-        />
-        <div class="w-64 bg-gray-200 rounded p-4 flex items-center justify-center">
-          <button
-            @click="addList"
-            class="text-blue-600 font-bold hover:underline"
-          >
-            + Add List
-          </button>
-        </div>
-      </div>
-    </main>
+  <div class="flex flex-col p-4">
+    <h1 class="text-2xl font-bold mb-4">Kanban Board</h1>
+    <div class="flex space-x-4">
+      <List 
+        v-for="(list, index) in lists" 
+        :key="list.id" 
+        :list="list" 
+        @edit-card="openEditModal" 
+        @update-list="updateList"
+      />
+    </div>
+    <EditCardModal 
+      v-if="isModalOpen" 
+      :card="selectedCard" 
+      @close-modal="closeEditModal" 
+      @save-card="saveCardChanges"
+    />
   </div>
 </template>
 
-<script lang="ts" setup>
-import { reactive } from 'vue';
+<script lang="ts">
+import { defineComponent, ref } from 'vue';
 import List from '../components/List.vue';
+import EditCardModal from '../components/modals/EditCardModal.vue';
+import { useBoardStore } from '../store/board'; // Assuming Pinia or Vuex is used
 
-const lists = reactive([
-  { title: 'To Do', cards: ['Task 1', 'Task 2'] },
-  { title: 'In Progress', cards: ['Task 3'] },
-]);
+export default defineComponent({
+  components: { List, EditCardModal },
+  setup() {
+    const store = useBoardStore();
+    const lists = store.lists;
+    const isModalOpen = ref(false);
+    const selectedCard = ref(null);
 
-const addList = () => {
-  lists.push({ title: `List ${lists.length + 1}`, cards: [] });
-};
+    const openEditModal = (card) => {
+      selectedCard.value = card;
+      isModalOpen.value = true;
+    };
 
-const addCard = (listIndex: number) => {
-  const cardName = prompt('Enter card name:');
-  if (cardName) lists[listIndex].cards.push(cardName);
-};
+    const closeEditModal = () => {
+      isModalOpen.value = false;
+      selectedCard.value = null;
+    };
+
+    const saveCardChanges = (updatedCard) => {
+      store.updateCard(updatedCard);
+      closeEditModal();
+    };
+
+    return { lists, isModalOpen, selectedCard, openEditModal, closeEditModal, saveCardChanges };
+  }
+});
 </script>
+
+<style scoped>
+/* Add any additional styling here */
+</style>

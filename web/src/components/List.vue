@@ -1,23 +1,34 @@
 <template>
-  <div class="w-64 bg-white shadow-md rounded p-4 space-y-4">
-    <h2 class="text-lg font-bold">{{ list.title }}</h2>
+  <div class="bg-gray-200 rounded-lg p-2 w-1/4">
+    <h2 class="font-bold text-lg mb-2">{{ list.title }}</h2>
     <div class="space-y-2">
-      <Card v-for="(card, index) in list.cards" :key="index" :card="card" />
+      <Card 
+        v-for="card in list.cards" 
+        :key="card.id" 
+        :card="card" 
+        @edit-card="emitEditCard"
+      />
     </div>
-    <button
-      @click="$emit('add-card')"
-      class="text-blue-600 font-bold hover:underline w-full text-left"
-    >
-      + Add Card
-    </button>
   </div>
 </template>
 
-<script lang="ts" setup>
+<script lang="ts">
+import { defineComponent } from 'vue';
 import Card from './Card.vue';
 
-defineProps({
-  list: Object,
+export default defineComponent({
+  components: { Card },
+  props: {
+    list: Object
+  },
+  methods: {
+    emitEditCard(card) {
+      this.$emit('edit-card', card);
+    }
+  }
 });
 </script>
 
+<style scoped>
+/* Add any additional styling here */
+</style>
