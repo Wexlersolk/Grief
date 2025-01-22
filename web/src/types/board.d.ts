@@ -1,5 +1,3 @@
-// src/types/board.d.ts
-
 export interface Card {
   id: string;
   title: string;

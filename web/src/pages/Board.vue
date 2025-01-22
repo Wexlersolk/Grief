@@ -1,55 +1,49 @@
 <template>
-  <div class="flex flex-col p-4">
-    <h1 class="text-2xl font-bold mb-4">Kanban Board</h1>
-    <div class="flex space-x-4">
-      <List 
-        v-for="(list, index) in lists" 
-        :key="list.id" 
-        :list="list" 
-        @edit-card="openEditModal" 
-        @update-list="updateList"
-      />
-    </div>
-    <EditCardModal 
-      v-if="isModalOpen" 
-      :card="selectedCard" 
-      @close-modal="closeEditModal" 
-      @save-card="saveCardChanges"
+  <div class="flex space-x-4 p-4 overflow-x-auto">
+    <List
+      v-for="list in boardStore.lists"
+      :key="list.id"
+      :list="list"
+      @remove-card="handleRemoveCard"
+      @edit-card="handleEditCard"
+      @move-card="handleMoveCard"
     />
+    <button @click="addNewList" class="bg-blue-500 text-white rounded p-2">Add New List</button>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue';
+import { defineComponent } from 'vue';
+import { useBoardStore } from '../store/board';
 import List from '../components/List.vue';
-import EditCardModal from '../components/modals/EditCardModal.vue';
-import { useBoardStore } from '../store/board'; // Assuming Pinia or Vuex is used
 
 export default defineComponent({
-  components: { List, EditCardModal },
+  components: { List },
   setup() {
-    const store = useBoardStore();
-    const lists = store.lists;
-    const isModalOpen = ref(false);
-    const selectedCard = ref(null);
+    const boardStore = useBoardStore();
+    boardStore.loadFromLocalStorage();
 
-    const openEditModal = (card) => {
-      selectedCard.value = card;
-      isModalOpen.value = true;
+    const addNewList = () => {
+      const title = prompt('Enter list title');
+      if (title) {
+        boardStore.addList(title);
+      }
     };
 
-    const closeEditModal = () => {
-      isModalOpen.value = false;
-      selectedCard.value = null;
+    const handleRemoveCard = (listId: string, cardId: string) => {
+      boardStore.removeCard(listId, cardId);
     };
 
-    const saveCardChanges = (updatedCard) => {
-      store.updateCard(updatedCard);
-      closeEditModal();
+    const handleEditCard = (listId: string, cardId: string, title: string, color: string) => {
+      boardStore.editCard(listId, cardId, title, color);
     };
 
-    return { lists, isModalOpen, selectedCard, openEditModal, closeEditModal, saveCardChanges };
-  }
+    const handleMoveCard = (cardId: string, fromListId: string, toListId: string) => {
+      boardStore.moveCard(cardId, fromListId, toListId);
+    };
+
+    return { boardStore, addNewList, handleRemoveCard, handleEditCard, handleMoveCard };
+  },
 });
 </script>
 
