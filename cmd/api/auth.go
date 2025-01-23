@@ -1,16 +1,11 @@
 package main
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
 	"fmt"
 	"net/http"
-	"time"
 
-	"github.com/Wexlersolk/Grief/internal/mailer"
+	"github.com/Nerzal/gocloak/v10"
 	"github.com/Wexlersolk/Grief/internal/store"
-	"github.com/golang-jwt/jwt/v5"
-	"github.com/google/uuid"
 )
 
 type RegisterUserPayload struct {
@@ -48,77 +43,52 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	user := &store.User{
-		Username: payload.Username,
-		Email:    payload.Email,
-		Role: store.Role{
-			Name: "user",
-		},
-	}
-
-	// hash the user password
-	if err := user.Password.Set(payload.Password); err != nil {
+	// Create user in Keycloak
+	client := gocloak.NewClient(app.config.keycloak.url)
+	token, err := client.LoginAdmin(r.Context(), app.config.keycloak.adminUsername, app.config.keycloak.adminPassword, app.config.keycloak.realm)
+	if err != nil {
 		app.internalServerError(w, r, err)
 		return
 	}
 
-	ctx := r.Context()
+	user := gocloak.User{
+		Username: gocloak.String(payload.Username),
+		Email:    gocloak.String(payload.Email),
+		Enabled:  gocloak.Bool(true),
+		Credentials: &[]gocloak.CredentialRepresentation{
+			{
+				Type:      gocloak.String("password"),
+				Value:     gocloak.String(payload.Password),
+				Temporary: gocloak.Bool(false),
+			},
+		},
+	}
 
-	plainToken := uuid.New().String()
-
-	// hash the token for storage but keep the plain token for email
-	hash := sha256.Sum256([]byte(plainToken))
-	hashToken := hex.EncodeToString(hash[:])
-
-	err := app.store.Users.CreateAndInvite(ctx, user, hashToken, app.config.mail.exp)
+	userID, err := client.CreateUser(r.Context(), token.AccessToken, app.config.keycloak.realm, user)
 	if err != nil {
-		switch err {
-		case store.ErrDuplicateEmail:
-			app.badRequestResponse(w, r, err)
-		case store.ErrDuplicateUsername:
-			app.badRequestResponse(w, r, err)
-		default:
-			app.internalServerError(w, r, err)
-		}
+		app.internalServerError(w, r, err)
 		return
 	}
 
-	userWithToken := UserWithToken{
-		User:  user,
-		Token: plainToken,
-	}
-	activationURL := fmt.Sprintf("%s/confirm/%s", app.config.frontendURL, plainToken)
-
-	isProdEnv := app.config.env == "production"
-	vars := struct {
-		Username      string
-		ActivationURL string
-	}{
-		Username:      user.Username,
-		ActivationURL: activationURL,
+	// Assign the "user" role to the new user
+	role, err := client.GetRealmRole(r.Context(), token.AccessToken, app.config.keycloak.realm, "user")
+	if err != nil {
+		app.internalServerError(w, r, err)
+		return
 	}
 
-	if isProdEnv {
-		// send mail
-		status, err := app.mailer.Send(mailer.UserWelcomeTemplate, user.Username, user.Email, vars, !isProdEnv)
-		if err != nil {
-			app.logger.Errorw("error sending welcome email", "error", err)
-
-			// rollback user creation if email fails (SAGA pattern)
-			if err := app.store.Users.Delete(ctx, user.ID); err != nil {
-				app.logger.Errorw("error deleting user", "error", err)
-			}
-
-			app.internalServerError(w, r, err)
-			return
-		}
-
-		app.logger.Infow("Email sent", "status code", status)
-	} else {
-		app.logger.Info("here is a key for prod: ", vars.ActivationURL)
+	err = client.AddRealmRoleToUser(r.Context(), token.AccessToken, app.config.keycloak.realm, userID, []gocloak.Role{*role})
+	if err != nil {
+		app.internalServerError(w, r, err)
+		return
 	}
 
-	if err := app.jsonResponse(w, http.StatusCreated, userWithToken); err != nil {
+	// Respond with the user ID
+	response := map[string]string{
+		"userID": userID,
+	}
+
+	if err := app.jsonResponse(w, http.StatusCreated, response); err != nil {
 		app.internalServerError(w, r, err)
 	}
 }
@@ -153,38 +123,48 @@ func (app *application) createTokenHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	user, err := app.store.Users.GetByEmail(r.Context(), payload.Email)
+	// Authenticate user with Keycloak
+	client := gocloak.NewClient(app.config.keycloak.url)
+	token, err := client.Login(r.Context(), app.config.keycloak.clientID, app.config.keycloak.clientSecret, app.config.keycloak.realm, payload.Email, payload.Password)
 	if err != nil {
-		switch err {
-		case store.ErrNotFound:
-			app.unauthorizedErrorResponse(w, r, err)
-		default:
-			app.internalServerError(w, r, err)
-		}
-		return
-	}
-
-	if err := user.Password.Compare(payload.Password); err != nil {
 		app.unauthorizedErrorResponse(w, r, err)
 		return
 	}
 
-	claims := jwt.MapClaims{
-		"sub": user.ID,
-		"exp": time.Now().Add(app.config.auth.token.exp).Unix(),
-		"iat": time.Now().Unix(),
-		"nbf": time.Now().Unix(),
-		"iss": app.config.auth.token.iss,
-		"aud": app.config.auth.token.iss,
+	// Respond with the token
+	response := map[string]string{
+		"access_token":  token.AccessToken,
+		"refresh_token": token.RefreshToken,
 	}
 
-	token, err := app.authenticator.GenerateToken(claims)
-	if err != nil {
+	if err := app.jsonResponse(w, http.StatusOK, response); err != nil {
 		app.internalServerError(w, r, err)
-		return
 	}
+}
 
-	if err := app.jsonResponse(w, http.StatusCreated, token); err != nil {
-		app.internalServerError(w, r, err)
+// validateTokenMiddleware validates the token using Keycloak
+func (app *application) validateTokenMiddleware(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		token := r.Header.Get("Authorization")
+		if token == "" {
+			app.unauthorizedErrorResponse(w, r, fmt.Errorf("missing token"))
+			return
+		}
+
+		// Validate token with Keycloak
+		client := gocloak.NewClient(app.config.keycloak.url)
+		rptResult, err := client.RetrospectToken(r.Context(), token, app.config.keycloak.clientID, app.config.keycloak.clientSecret, app.config.keycloak.realm)
+		if err != nil {
+			app.unauthorizedErrorResponse(w, r, err)
+			return
+		}
+
+		if !*rptResult.Active {
+			app.unauthorizedErrorResponse(w, r, fmt.Errorf("invalid token"))
+			return
+		}
+
+		// Token is valid, proceed to the next handler
+		next.ServeHTTP(w, r)
 	}
 }

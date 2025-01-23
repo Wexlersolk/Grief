@@ -5,12 +5,16 @@ import Home from '@/pages/Home.vue';
 import TicTacToe from '@/pages/TicTacToe.vue';
 import Canvas from '@/pages/Canvas.vue';
 import Board from '@/pages/Board.vue'; // Import the Board page
+import Login from '@/pages/Login.vue'; // Import the Login page
+import Signin from '@/pages/Signin.vue'; // Import the Signin page
 
 const routes = [
   { path: '/', name: 'Home', component: Home },
   { path: '/tictactoe', name: 'TicTacToe', component: TicTacToe },
   { path: '/canvas', name: 'Canvas', component: Canvas },
-  { path: '/board', name: 'Board', component: Board }, // Add route for Board
+  { path: '/board', name: 'Board', component: Board }, // Route for Board
+  { path: '/login', name: 'Login', component: Login }, // Route for Login
+  { path: '/signin', name: 'Signin', component: Signin }, // Route for Signin
 ];
 
 const router = createRouter({
