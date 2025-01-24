@@ -1,6 +1,6 @@
 <template>
   <div
-    class="bg-white rounded-lg shadow-md cursor-pointer hover:shadow-lg transition-shadow"
+    class="bg-gray-200 rounded-lg shadow-md cursor-pointer hover:shadow-lg transition-shadow relative"
     draggable="true"
     @dragstart="onDragStart"
     @dragend="onDragEnd"
@@ -11,7 +11,7 @@
 
     <!-- Card content -->
     <div class="p-3">
-      <p class="text-sm">{{ card.title }}</p>
+      <p class="text-sm text-gray-800">{{ card.title }}</p>
     </div>
 
     <!-- Remove button -->
