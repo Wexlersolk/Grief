@@ -1,6 +1,8 @@
 tmp
+.gitignore
 .env
 .envrc
+test.templ
 bin/
 internal/mailer/templates
 # Logs
