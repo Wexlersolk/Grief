@@ -1,4 +1,8 @@
 # Logs
+keycloak.json
+public/keycloak.json
+public/*
+.gitignore
 logs
 *.log
 npm-debug.log*

@@ -1,6 +1,5 @@
-// src/router/index.ts
-
 import { createRouter, createWebHistory } from 'vue-router';
+import { getKeycloakInstance } from '@/services/keycloak'; // Import Keycloak instance
 import Home from '@/pages/Home.vue';
 import TicTacToe from '@/pages/TicTacToe.vue';
 import Canvas from '@/pages/Canvas.vue';
@@ -20,6 +19,28 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
+});
+
+// Define public routes that don't require authentication
+const publicRoutes = ['Login', 'Signup'];
+
+// Add a global navigation guard
+router.beforeEach((to, from, next) => {
+  const keycloak = getKeycloakInstance();
+
+  // Check if the route is public
+  if (publicRoutes.includes(to.name as string)) {
+    next(); // Allow access to public routes
+    return;
+  }
+
+  // Check if the user is authenticated
+  if (keycloak.authenticated) {
+    next(); // Allow access to protected routes
+  } else {
+    // Redirect to Keycloak login if not authenticated
+    keycloak.login({ redirectUri: window.location.origin + to.fullPath });
+  }
 });
 
 export default router;
